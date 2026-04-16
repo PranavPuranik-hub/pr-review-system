@@ -1,0 +1,47 @@
+name: Automated PR Review (Free + AI)
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+      security-events: write
+
+    steps:
+
+      # Step 1: Checkout
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Setup Node
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Step 3: Lint check
+      - name: Run ESLint
+        run: npx eslint . --max-warnings 0
+
+      # Step 4: Run tests
+      - name: Run tests
+        run: npm test
+
+      # Step 5: CodeQL Security Scan
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+
+      - name: Run CodeQL analysis
+        uses: github/codeql-action/analyze@v3
